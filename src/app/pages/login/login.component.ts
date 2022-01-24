@@ -32,7 +32,6 @@ export class LoginComponent implements OnInit {
       if (resp.ok) {
         this.router.navigateByUrl('./home');
       } else {
-        console.log(resp)
         Swal.fire('Error', resp.msg, 'error');
       }
     });

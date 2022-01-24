@@ -45,7 +45,15 @@ export class AuthService {
    * @returns body {@link UserAuthResponse}
    */
   register(user: NewUser): Observable<UserAuthResponse> {
-    return this.http.post<UserAuthResponse>(`${environment.baseUrl}/${environment.endpoints.auth}/new`, user);
+    return this.http.post<UserAuthResponse>(`${environment.baseUrl}/${environment.endpoints.auth}/new`, user)
+      .pipe(
+        tap(resp => {
+          if (resp.ok) {
+            this.saveTokenLocalStorage(resp);
+          }
+        }),
+        catchError(err => of(err.error))
+      );
   }
 
   validToken(): Observable<boolean> {
@@ -63,11 +71,18 @@ export class AuthService {
   }
 
   /**
+   * Clear local storage
+   */
+  logout(): void {
+    localStorage.clear();
+  }
+
+  /**
    * Save token in local storage
    *
    * @param resp {@link UserAuthResponse}
    */
-  saveTokenLocalStorage(resp: UserAuthResponse): void {
+  private saveTokenLocalStorage(resp: UserAuthResponse): void {
     localStorage.setItem('token', resp.token!);
     this._user = { name: resp.name!, id: resp.id! }
   }
