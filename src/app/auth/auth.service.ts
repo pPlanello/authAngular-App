@@ -5,7 +5,7 @@ import { environment } from 'src/environments/environment';
 import { NewUser } from '../shared/models/newUser.model';
 import { User } from '../shared/models/user.model';
 import { UserAuthResponse } from '../shared/models/UserAuthResponse.model';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, tap, map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -32,11 +32,7 @@ export class AuthService {
         .pipe(
           tap(resp => {
             if (resp.ok) {
-              localStorage.setItem('token', resp.token!);
-              this._user = {
-                name: resp.name!,
-                id: resp.id!
-              }
+              this.saveTokenLocalStorage(resp);
             }
           }),
           catchError(err => of(err.error))
@@ -52,10 +48,27 @@ export class AuthService {
     return this.http.post<UserAuthResponse>(`${environment.baseUrl}/${environment.endpoints.auth}/new`, user);
   }
 
-  getUserByToken() {
+  validToken(): Observable<boolean> {
     const headers = new HttpHeaders()
       .set('x-token', localStorage.getItem('token') || '');
 
-    return this.http.get(`${environment.baseUrl}/${environment.endpoints.auth}/renew`, {headers});
+    return this.http.get<UserAuthResponse>(`${environment.baseUrl}/${environment.endpoints.auth}/renew`, {headers})
+      .pipe(
+        map(resp => {
+          this.saveTokenLocalStorage(resp);
+          return resp.ok
+        }),
+        catchError( err => of(false))
+      );
+  }
+
+  /**
+   * Save token in local storage
+   *
+   * @param resp {@link UserAuthResponse}
+   */
+  saveTokenLocalStorage(resp: UserAuthResponse): void {
+    localStorage.setItem('token', resp.token!);
+    this._user = { name: resp.name!, id: resp.id! }
   }
 }
