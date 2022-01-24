@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { environment } from 'src/environments/environment';
@@ -32,6 +32,7 @@ export class AuthService {
         .pipe(
           tap(resp => {
             if (resp.ok) {
+              localStorage.setItem('token', resp.token!);
               this._user = {
                 name: resp.name!,
                 id: resp.id!
@@ -51,7 +52,10 @@ export class AuthService {
     return this.http.post<UserAuthResponse>(`${environment.baseUrl}/${environment.endpoints.auth}/new`, user);
   }
 
-  getToken() {
-    return this.http.get(`${environment.baseUrl}/${environment.endpoints.auth}/renew`);
+  getUserByToken() {
+    const headers = new HttpHeaders()
+      .set('x-token', localStorage.getItem('token') || '');
+
+    return this.http.get(`${environment.baseUrl}/${environment.endpoints.auth}/renew`, {headers});
   }
 }
