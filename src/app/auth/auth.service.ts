@@ -2,10 +2,10 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { NewUser } from '../shared/models/newUser.model';
-import { User } from '../shared/models/user.model';
 import { UserAuthResponse } from '../shared/models/UserAuthResponse.model';
 import { catchError, tap, map } from 'rxjs/operators';
+import { User } from '../shared/models/User.model';
+import { NewUser } from '../shared/models/NewUser.model';
 
 @Injectable({
   providedIn: 'root'
@@ -22,6 +22,7 @@ export class AuthService {
 
   /**
    * POST to login user
+   *
    * @param email
    * @param password
    * @returns body {@link UserAuthResponse}
@@ -41,6 +42,7 @@ export class AuthService {
 
   /**
    * POST to register user
+   *
    * @param user
    * @returns body {@link UserAuthResponse}
    */
@@ -56,6 +58,11 @@ export class AuthService {
       );
   }
 
+  /**
+   * Verify Valid Token
+   *
+   * @returns {@link boolean} correct token
+   */
   validToken(): Observable<boolean> {
     const headers = new HttpHeaders()
       .set('x-token', localStorage.getItem('token') || '');
